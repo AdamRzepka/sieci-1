@@ -2,7 +2,7 @@ import metrics
 import socket
 
 BUFFER_SIZE = 2048
-address = 127.0.0.1
+address = '127.0.0.1'
 port = 12087
 message = 'message from sensor'
 
@@ -13,6 +13,6 @@ s.send(message)
 data = s.recv(BUFFER_SIZE)
 s.close()
 
-print 'Message from server: %s', data
+print 'Message from server: ', data
 
 print metrics.cpu_stat.procs_running()

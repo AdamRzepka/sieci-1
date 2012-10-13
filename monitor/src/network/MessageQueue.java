@@ -5,6 +5,7 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Set;
 
 public class MessageQueue {
@@ -54,6 +55,21 @@ public class MessageQueue {
 		return key;
 	}
 	
+	/**
+	 * Usuwa WSZYSTKIE rekordy związane z danym kanałem
+	 * @param channel
+	 */
+	public void unregisterChannel(SelectableChannel channel) {
+		Iterator<ChannelRecord> it = channelRecords.iterator();
+		while (it.hasNext()) {
+			ChannelRecord record = it.next();
+			if (record.getKey().channel() == channel) {
+				record.getKey().cancel();
+				it.remove(); // usunięcie w ten sposób powinno być bezpieczne
+			}
+		}
+	}
+	
 	public void run() {
 		while (true) {
 			try {
@@ -61,9 +77,11 @@ public class MessageQueue {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				throw new RuntimeException(); // temporary
 			}
 			
 			Set<SelectionKey> keys = selector.selectedKeys();
+			// TODO zamienic na for-each
 			for (int i = 0; i < channelRecords.size(); ++i) {
 				ChannelRecord record = channelRecords.get(i);
 				if (keys.contains(record.getKey())) {

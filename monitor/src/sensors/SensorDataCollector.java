@@ -20,13 +20,17 @@ public class SensorDataCollector {
 		public void onSelected(SelectableChannel channel,
 				int readyOperationsMask) {
 			if ((readyOperationsMask & SelectionKey.OP_ACCEPT) != 0) {
-				ServerSocketChannel serverChannel = (ServerSocketChannel)channel;
+				ServerSocketChannel serverChannel = (ServerSocketChannel) channel;
 				try {
 					SocketChannel socket = serverChannel.accept();
-					messageQueue.registerChannel(socket, new SensorMessageHandler(), SelectionKey.OP_READ);
+					System.out.printf("New connection from %s\n", socket
+							.getRemoteAddress().toString());
+					messageQueue.registerChannel(socket,
+							new SensorMessageHandler(), SelectionKey.OP_READ);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					System.exit(1); // temporary
 				}
 			}
 		}
@@ -38,21 +42,28 @@ public class SensorDataCollector {
 		public void onSelected(SelectableChannel channel,
 				int readyOperationsMask) {
 			if ((readyOperationsMask & SelectionKey.OP_READ) != 0) {
-				SocketChannel socketChannel = (SocketChannel)channel;
+				SocketChannel socketChannel = (SocketChannel) channel;
 				try {
-//					InputStream stream =  socketChannel.socket().getInputStream();
-//					InputStreamReader streamReader = new InputStreamReader(stream);
-//					CharBuffer buff = CharBuffer.allocate(1024);
-//					streamReader.read(buff);
 					ByteBuffer buff = ByteBuffer.allocate(1024);
-					socketChannel.read(buff);
+					int readed = socketChannel.read(buff);
 					buff.flip();
-					CharBuffer cbuff = Charset.defaultCharset().decode(buff);
-					System.out.println(cbuff.toString());
-					
+
+					if (readed == -1) {
+						System.out.printf("Client %s has disconnected\n",
+								socketChannel.getRemoteAddress().toString());
+						messageQueue.unregisterChannel(socketChannel);
+					} else {
+						System.out.printf("New message from %s:\n", socketChannel
+								.getRemoteAddress().toString());
+						CharBuffer cbuff = Charset.defaultCharset()
+								.decode(buff);
+						System.out.println(cbuff.toString());
+					}
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					System.exit(1); // temporary
 				}
 			}
 		}
@@ -72,6 +83,7 @@ public class SensorDataCollector {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.exit(1); // temporary
 		}
 	}
 

@@ -9,29 +9,30 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class MessageQueue {
-	
+
 	private static class ChannelRecord {
-		
-		public ChannelRecord(SelectionKey selectionKey, ChannelSelectionHandler handler) {
+
+		public ChannelRecord(SelectionKey selectionKey,
+				ChannelSelectionHandler handler) {
 			this.key = selectionKey;
 			this.handler = handler;
 		}
-		
+
 		public SelectionKey getKey() {
 			return key;
 		}
-		
+
 		public ChannelSelectionHandler getHandler() {
 			return handler;
 		}
-		
+
 		private SelectionKey key;
 		private ChannelSelectionHandler handler;
 	}
-	
+
 	private Selector selector;
-	private ArrayList<ChannelRecord> channelRecords = new ArrayList<ChannelRecord>(); 
-	
+	private ArrayList<ChannelRecord> channelRecords = new ArrayList<ChannelRecord>();
+
 	public MessageQueue() {
 		try {
 			selector = Selector.open();
@@ -42,7 +43,9 @@ public class MessageQueue {
 		}
 	}
 
-	public SelectionKey registerChannel(SelectableChannel channel, ChannelSelectionHandler selectionHandler, int selectionOptions) throws IOException {
+	public SelectionKey registerChannel(SelectableChannel channel,
+			ChannelSelectionHandler selectionHandler, int selectionOptions)
+			throws IOException {
 		SelectionKey key;
 		try {
 			channel.configureBlocking(false);
@@ -50,13 +53,14 @@ public class MessageQueue {
 		} catch (IOException e) {
 			System.err.println("Unable to register channel.");
 			throw e;
-		}		
+		}
 		channelRecords.add(new ChannelRecord(key, selectionHandler));
 		return key;
 	}
-	
+
 	/**
 	 * Usuwa WSZYSTKIE rekordy związane z danym kanałem
+	 * 
 	 * @param channel
 	 */
 	public void unregisterChannel(SelectableChannel channel) {
@@ -69,7 +73,7 @@ public class MessageQueue {
 			}
 		}
 	}
-	
+
 	public void run() {
 		while (true) {
 			try {
@@ -79,13 +83,13 @@ public class MessageQueue {
 				e.printStackTrace();
 				throw new RuntimeException(); // temporary
 			}
-			
+
 			Set<SelectionKey> keys = selector.selectedKeys();
-			// TODO zamienic na for-each
-			for (int i = 0; i < channelRecords.size(); ++i) {
-				ChannelRecord record = channelRecords.get(i);
+			for (ChannelRecord record : channelRecords) {
 				if (keys.contains(record.getKey())) {
-					record.getHandler().onSelected(record.getKey().channel(), record.getKey().readyOps());
+					record.getHandler().onSelected(
+							record.getKey().channel(),
+							record.getKey().readyOps());
 					keys.remove(record.getKey());
 				}
 			}

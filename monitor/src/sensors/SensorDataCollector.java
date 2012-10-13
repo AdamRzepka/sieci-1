@@ -52,6 +52,7 @@ public class SensorDataCollector {
 						System.out.printf("Client %s has disconnected\n",
 								socketChannel.getRemoteAddress().toString());
 						messageQueue.unregisterChannel(socketChannel);
+						socketChannel.close();
 					} else {
 						System.out.printf("New message from %s:\n", socketChannel
 								.getRemoteAddress().toString());

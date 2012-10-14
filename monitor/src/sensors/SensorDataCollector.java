@@ -164,6 +164,10 @@ public class SensorDataCollector {
 		return metrics;
 	}
 
+	public ArrayList<Sensor> getSensors() {
+		return sensors;
+	}
+
 	private MessageQueue messageQueue;
 	private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 }

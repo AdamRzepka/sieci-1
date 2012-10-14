@@ -4,5 +4,7 @@
 
 *.pyc
 *.class
+*.project
+*.classpath
 
 TAGS

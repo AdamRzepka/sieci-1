@@ -61,8 +61,9 @@ public class SensorDataCollector {
 						CharBuffer cbuff = Charset.defaultCharset()
 								.decode(buff);
 						System.out.println(cbuff.toString());
-						
+
 						updateMeasurement(cbuff.toString());
+						
 					}
 
 				} catch (IOException e) {
@@ -107,6 +108,62 @@ public class SensorDataCollector {
 		}
 	}
 
+	/**
+	 * Pobiera sensor odpowiadający podanemu zasobowi i metryce (lub null, jeśli
+	 * taki nie istnieje)
+	 * 
+	 * @param resource
+	 * @param metric
+	 * @return
+	 */
+	Sensor findSensor(String resource, String metric) {
+		for (Sensor sensor : sensors) {
+			if (sensor.getResource().equals(resource)
+					&& sensor.getMetric().equals(metric)) {
+				return sensor;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Listuje wszystkie zasoby, dla których istnieje co najmniej jeden
+	 * zarejestrowany sensor.
+	 * 
+	 * @return
+	 */
+	ArrayList<String> listResources() {
+		// TODO zmienić reprezentację sensorów, żeby to zczytywanie było szybsze
+		// (sortowanie?)
+		ArrayList<String> resources = new ArrayList<String>();
+		for (Sensor sensor : sensors) {
+			if (!resources.contains(sensor.getResource())) {
+				resources.add(sensor.getResource());
+			}
+		}
+
+		return resources;
+	}
+
+	/**
+	 * Listuje wszystkie metryki, dla podanego zasobu, dla których istnieje co
+	 * najmniej jeden zarejestrowany sensor
+	 * 
+	 * @param resource
+	 * @return
+	 */
+	ArrayList<String> listMetrics(String resource) {
+		ArrayList<String> metrics = new ArrayList<String>();
+		for (Sensor sensor : sensors) {
+			if (sensor.getResource().equals(resource)
+					&& !metrics.contains(sensor.getMetric())) {
+				metrics.add(sensor.getMetric());
+			}
+		}
+
+		return metrics;
+	}
+
 	private MessageQueue messageQueue;
-	private ArrayList<Sensor> sensors;
+	private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 }

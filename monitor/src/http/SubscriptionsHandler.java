@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.handler.AbstractHandler;
 
+import sensors.Sensor;
 import sensors.SensorDataCollector;
 
 import java.util.ArrayList;
@@ -31,16 +32,25 @@ public class SubscriptionsHandler extends AbstractHandler {
 		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9]*)$");
 		Matcher metricListMatcher = metricListPattern.matcher(request.getRequestURI());
 		
-		
-//		System.out.println(request.getRequestURI());
-//		if(metricListMatcher.find()){
-//			System.out.println(metricListMatcher.group(1));
-//		}
-//		
 
 		if (request.getRequestURI().equalsIgnoreCase("/subscriptions/")
 				&& request.getMethod().equalsIgnoreCase("POST")) {
 			// TODO: Poszedł post do servera
+			
+//			System.out.print(request.getMethod());
+			
+			String resource = request.getReader().readLine();
+			String metric = request.getReader().readLine();
+			
+			System.out.println(resource);
+			System.out.println(metric);
+			
+			Sensor sensor = null;
+			sensor = sensorDataCollector.findSensor(resource, metric);
+			if(sensor != null){
+				System.out.println(Float.toString(sensor.getLastMeasurement()));
+			}
+			
 
 			response.setContentType("text/html");
 			response.setStatus(HttpServletResponse.SC_CREATED);

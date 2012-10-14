@@ -18,11 +18,16 @@ package gui;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.AbstractListModel;
 
 public class Client extends javax.swing.JFrame {
@@ -234,21 +239,70 @@ public class Client extends javax.swing.JFrame {
 		if (!AvailableSensorsList.isSelectionEmpty()
 				&& ConnectedSensorsListModel.indexOf(AvailableSensorsList
 						.getSelectedValue().toString()) < 0) {
+			String selectedResourceMetric = new String(AvailableSensorsList
+						.getSelectedValue().toString());
+			
+			try {
+				Pattern p = Pattern.compile("^(.[a-zA-Z0-9\\-_]*)#(.[a-zA-Z0-9\\-_]*)$");
+				System.out.println(AvailableSensorsList
+						.getSelectedValue().toString());
+				Matcher m = p.matcher(AvailableSensorsList
+						.getSelectedValue().toString());
+				
+				URL url;
+
+				url = new URL("http://localhost:8080/subscriptions/");
+				
+				String charset = "UTF-8";
+				String query = new String();
+				if(m.find()){
+					System.out.println(m.group(1)+m.group(2));
+					query = m.group(1)+"\n"+m.group(2);
+				}
+				
+
+				URLConnection conn;
+				conn = url.openConnection();
+				
+				OutputStream output = null;
+				conn.setDoOutput(true);
+				try {
+				     output = conn.getOutputStream();
+				     output.write(query.getBytes(charset));
+				} finally {
+				     if (output != null) try { output.close(); } catch (IOException logOrIgnore) {}
+				}
+				
+				// Get the response
+				BufferedReader reader = new BufferedReader(new InputStreamReader(
+						conn.getInputStream()));
+				String line;
+				
+				
+				while ((line = reader.readLine()) != null) {
+//					AvaibleMetricsListModel.addElement(AvailableResourcesList.getSelectedValue().toString()+"#"+line);
+					System.out.println(line);
+				}
+				reader.close();
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			// TODO: wybieranie i subskrypcja kanału
-			ConnectedSensorsListModel.addElement(AvailableSensorsList
-					.getSelectedValue().toString());
+			ConnectedSensorsListModel.addElement(selectedResourceMetric);
 
 			// Dodanie nowej zakładki dla sensora
 			javax.swing.JScrollPane jScrollPane = new javax.swing.JScrollPane();
 			javax.swing.JTextArea jTextArea1 = new javax.swing.JTextArea();
 			jTextArea1.setColumns(20);
 			jTextArea1.setRows(5);
-			jTextArea1.setText(AvailableSensorsList.getSelectedValue()
-					.toString());
+			jTextArea1.setText(selectedResourceMetric);
 			jScrollPane.setViewportView(jTextArea1);
-			SensorsInformationTabs.addTab(AvailableSensorsList
-					.getSelectedValue().toString(), jScrollPane);
+			SensorsInformationTabs.addTab(selectedResourceMetric, jScrollPane);
 		}
 
 	}

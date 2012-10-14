@@ -13,6 +13,7 @@
  *
  * @author gastlich
  */
+package gui;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,185 +48,183 @@ public class Client extends javax.swing.JFrame {
 		ConnectedSensorsList = new javax.swing.JList();
 		connectToSensor = new javax.swing.JButton();
 		disconnectFromSensor = new javax.swing.JButton();
+		AvailableResourcesPanel = new javax.swing.JPanel();
+        AvailableResourcesScrollPane = new javax.swing.JScrollPane();
+        AvailableResourcesList = new javax.swing.JList();
+        connectToResource = new javax.swing.JButton();
+        disconnectFromResource = new javax.swing.JButton();
 		Menu = new javax.swing.JMenuBar();
 		File = new javax.swing.JMenu();
 		Exit = new javax.swing.JMenuItem();
 		SensorsInformationTabs = new javax.swing.JTabbedPane();
 		ConnectedSensorsListModel = new javax.swing.DefaultListModel();
-
+		AvaibleMetricsListModel = new javax.swing.DefaultListModel();
+		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-		AvailableSensorsPanel.setBorder(javax.swing.BorderFactory
-				.createTitledBorder("Avaible sensors"));
+        AvailableSensorsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Avaible metrics"));
 
-		AvailableSensorsList.setModel(new SensorsListModel());
+        AvailableSensorsList.setModel(AvaibleMetricsListModel);
 		AvailableSensorsScrollPane.setViewportView(AvailableSensorsList);
 
-		javax.swing.GroupLayout AvailableSensorsPanelLayout = new javax.swing.GroupLayout(
-				AvailableSensorsPanel);
-		AvailableSensorsPanel.setLayout(AvailableSensorsPanelLayout);
-		AvailableSensorsPanelLayout
-				.setHorizontalGroup(AvailableSensorsPanelLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								AvailableSensorsPanelLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addComponent(
-												AvailableSensorsScrollPane,
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												171, Short.MAX_VALUE)
-										.addContainerGap()));
-		AvailableSensorsPanelLayout
-				.setVerticalGroup(AvailableSensorsPanelLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								AvailableSensorsPanelLayout
-										.createSequentialGroup()
-										.addComponent(
-												AvailableSensorsScrollPane,
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												210, Short.MAX_VALUE)
-										.addContainerGap()));
+        javax.swing.GroupLayout AvailableSensorsPanelLayout = new javax.swing.GroupLayout(AvailableSensorsPanel);
+        AvailableSensorsPanel.setLayout(AvailableSensorsPanelLayout);
+        AvailableSensorsPanelLayout.setHorizontalGroup(
+            AvailableSensorsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AvailableSensorsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(AvailableSensorsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        AvailableSensorsPanelLayout.setVerticalGroup(
+            AvailableSensorsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AvailableSensorsPanelLayout.createSequentialGroup()
+                .addComponent(AvailableSensorsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
-		ConnectedSensorsPanel.setBorder(javax.swing.BorderFactory
-				.createTitledBorder("Connected sensors"));
+        ConnectedSensorsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Connected to"));
 
-		ConnectedSensorsList.setModel(ConnectedSensorsListModel);
+        ConnectedSensorsList.setModel(ConnectedSensorsListModel);
 		ConnectedSensorsScrollPane.setViewportView(ConnectedSensorsList);
 
-		javax.swing.GroupLayout ConnectedSensorsPanelLayout = new javax.swing.GroupLayout(
-				ConnectedSensorsPanel);
-		ConnectedSensorsPanel.setLayout(ConnectedSensorsPanelLayout);
-		ConnectedSensorsPanelLayout
-				.setHorizontalGroup(ConnectedSensorsPanelLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								ConnectedSensorsPanelLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addComponent(
-												ConnectedSensorsScrollPane,
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												171, Short.MAX_VALUE)
-										.addContainerGap()));
-		ConnectedSensorsPanelLayout
-				.setVerticalGroup(ConnectedSensorsPanelLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								ConnectedSensorsPanelLayout
-										.createSequentialGroup()
-										.addComponent(
-												ConnectedSensorsScrollPane,
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												210, Short.MAX_VALUE)
-										.addContainerGap()));
+        javax.swing.GroupLayout ConnectedSensorsPanelLayout = new javax.swing.GroupLayout(ConnectedSensorsPanel);
+        ConnectedSensorsPanel.setLayout(ConnectedSensorsPanelLayout);
+        ConnectedSensorsPanelLayout.setHorizontalGroup(
+            ConnectedSensorsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ConnectedSensorsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ConnectedSensorsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        ConnectedSensorsPanelLayout.setVerticalGroup(
+            ConnectedSensorsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ConnectedSensorsPanelLayout.createSequentialGroup()
+                .addComponent(ConnectedSensorsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
-		connectToSensor.setText(">>");
-		connectToSensor.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				connectToSensorActionPerformed(evt);
-			}
-		});
+        connectToSensor.setText(">>");
+        connectToSensor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectToSensorActionPerformed(evt);
+            }
+        });
 
-		disconnectFromSensor.setText("<<");
-		disconnectFromSensor
-				.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent evt) {
-						disconnectFromSensorActionPerformed(evt);
-					}
-				});
+        disconnectFromSensor.setText("<<");
+        disconnectFromSensor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectFromSensorActionPerformed(evt);
+            }
+        });
 
-		File.setText("File");
+        AvailableResourcesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Avaible resources"));
 
-		Exit.setText("exit");
-		Exit.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				ExitActionPerformed(evt);
-			}
-		});
-		File.add(Exit);
+        AvailableResourcesList.setModel(new ResourcesListModel());
+        AvailableResourcesScrollPane.setViewportView(AvailableResourcesList);
 
-		Menu.add(File);
+        javax.swing.GroupLayout AvailableResourcesPanelLayout = new javax.swing.GroupLayout(AvailableResourcesPanel);
+        AvailableResourcesPanel.setLayout(AvailableResourcesPanelLayout);
+        AvailableResourcesPanelLayout.setHorizontalGroup(
+            AvailableResourcesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AvailableResourcesPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(AvailableResourcesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        AvailableResourcesPanelLayout.setVerticalGroup(
+            AvailableResourcesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AvailableResourcesPanelLayout.createSequentialGroup()
+                .addComponent(AvailableResourcesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
-		setJMenuBar(Menu);
+        connectToResource.setText(">>");
+        connectToResource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectToResourceActionPerformed(evt);
+            }
+        });
 
-		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(
-				getContentPane());
-		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(
-						layout.createSequentialGroup()
-								.addContainerGap()
-								.addGroup(
-										layout.createParallelGroup(
-												javax.swing.GroupLayout.Alignment.LEADING)
-												.addComponent(
+        disconnectFromResource.setText("<<");
+        disconnectFromResource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectFromResourceActionPerformed(evt);
+            }
+        });
+
+        File.setText("File");
+
+        Exit.setText("exit");
+        Exit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ExitActionPerformed(evt);
+            }
+        });
+        File.add(Exit);
+
+        Menu.add(File);
+
+        setJMenuBar(Menu);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(
 														SensorsInformationTabs,
 														javax.swing.GroupLayout.DEFAULT_SIZE,
 														460, Short.MAX_VALUE)
-												.addGroup(
-														layout.createSequentialGroup()
-																.addComponent(
-																		AvailableSensorsPanel,
-																		javax.swing.GroupLayout.PREFERRED_SIZE,
-																		javax.swing.GroupLayout.DEFAULT_SIZE,
-																		javax.swing.GroupLayout.PREFERRED_SIZE)
-																.addPreferredGap(
-																		javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																.addGroup(
-																		layout.createParallelGroup(
-																				javax.swing.GroupLayout.Alignment.LEADING)
-																				.addComponent(
-																						disconnectFromSensor)
-																				.addComponent(
-																						connectToSensor))
-																.addPreferredGap(
-																		javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-																.addComponent(
-																		ConnectedSensorsPanel,
-																		javax.swing.GroupLayout.PREFERRED_SIZE,
-																		javax.swing.GroupLayout.DEFAULT_SIZE,
-																		javax.swing.GroupLayout.PREFERRED_SIZE)))
-								.addContainerGap()));
-		layout.setVerticalGroup(layout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(
-						layout.createSequentialGroup()
-								.addContainerGap()
-								.addGroup(
-										layout.createParallelGroup(
-												javax.swing.GroupLayout.Alignment.LEADING)
-												.addGroup(
-														layout.createSequentialGroup()
-																.addGap(6, 6, 6)
-																.addComponent(
-																		connectToSensor)
-																.addPreferredGap(
-																		javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																.addComponent(
-																		disconnectFromSensor))
-												.addComponent(
-														ConnectedSensorsPanel,
-														javax.swing.GroupLayout.PREFERRED_SIZE,
-														javax.swing.GroupLayout.DEFAULT_SIZE,
-														javax.swing.GroupLayout.PREFERRED_SIZE)
-												.addComponent(
-														AvailableSensorsPanel,
-														javax.swing.GroupLayout.PREFERRED_SIZE,
-														javax.swing.GroupLayout.DEFAULT_SIZE,
-														javax.swing.GroupLayout.PREFERRED_SIZE))
-								.addGap(18, 18, 18)
-								.addComponent(SensorsInformationTabs,
-										javax.swing.GroupLayout.DEFAULT_SIZE,
-										222, Short.MAX_VALUE).addContainerGap()));
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(AvailableResourcesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(11, 11, 11)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(disconnectFromResource)
+                    .addComponent(connectToResource))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(AvailableSensorsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(disconnectFromSensor)
+                    .addComponent(connectToSensor))
+                .addGap(12, 12, 12)
+                .addComponent(ConnectedSensorsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            
+            .addGroup(layout.createSequentialGroup()
+            		
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(connectToSensor)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(disconnectFromSensor))
+                            .addComponent(ConnectedSensorsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(AvailableResourcesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(AvailableSensorsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(connectToResource)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(disconnectFromResource)))
+                .addContainerGap(20, Short.MAX_VALUE)
+                .addComponent(SensorsInformationTabs,
+						javax.swing.GroupLayout.DEFAULT_SIZE,
+						222, Short.MAX_VALUE).addContainerGap())
+        );
 
-		pack();
+        pack();
+
+		
+
+		
 	}
 
 	private void connectToSensorActionPerformed(java.awt.event.ActionEvent evt) {
@@ -267,6 +266,40 @@ public class Client extends javax.swing.JFrame {
 					.getSelectedValue().toString());
 
 		}
+	}
+	
+	private void connectToResourceActionPerformed(java.awt.event.ActionEvent evt) {
+		if (!AvailableResourcesList.isSelectionEmpty()) {
+			try {
+				URL url;
+
+				url = new URL("http://localhost:8080/subscriptions/metrics/"+AvailableResourcesList.getSelectedValue().toString());
+
+				URLConnection conn;
+				conn = url.openConnection();
+				
+				// Get the response
+				BufferedReader reader = new BufferedReader(new InputStreamReader(
+						conn.getInputStream()));
+				String line;
+				
+				AvaibleMetricsListModel.clear();
+				while ((line = reader.readLine()) != null) {
+					AvaibleMetricsListModel.addElement(AvailableResourcesList.getSelectedValue().toString()+"#"+line);
+				}
+				reader.close();
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void disconnectFromResourceActionPerformed(java.awt.event.ActionEvent evt) {
+		AvaibleMetricsListModel.clear();
 	}
 
 	private void ExitActionPerformed(java.awt.event.ActionEvent evt) {
@@ -345,16 +378,39 @@ public class Client extends javax.swing.JFrame {
 	private javax.swing.JButton connectToSensor;
 	private javax.swing.JButton disconnectFromSensor;
 	private javax.swing.DefaultListModel ConnectedSensorsListModel;
+	private javax.swing.DefaultListModel AvaibleMetricsListModel;
+	private javax.swing.JList AvailableResourcesList;
+    private javax.swing.JPanel AvailableResourcesPanel;
+    private javax.swing.JScrollPane AvailableResourcesScrollPane;
+    private javax.swing.JButton connectToResource;
+    private javax.swing.JButton disconnectFromResource;
 
 }
 
-class SensorsListModel extends AbstractListModel {
-	private ArrayList<String> sensorArray = null;
+//class SensorsListModel extends AbstractListModel {
+//	private ArrayList<String> sensorArray = null;
+//
+//	public SensorsListModel() {
+//		sensorArray = new ArrayList<String>();
+//
+//	}
+//
+//	public int getSize() {
+//		return sensorArray.size();
+//	}
+//
+//	public Object getElementAt(int n) {
+//		return sensorArray.get(n);
+//	}
+//}
 
-	public SensorsListModel() {
+class ResourcesListModel extends AbstractListModel {
+	private ArrayList<String> resourcesArray = null;
+
+	public ResourcesListModel() {
 
 		try {
-			sensorArray = new ArrayList<String>();
+			resourcesArray = new ArrayList<String>();
 			URL url;
 
 			url = new URL("http://localhost:8080/subscriptions/");
@@ -367,7 +423,7 @@ class SensorsListModel extends AbstractListModel {
 					conn.getInputStream()));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				sensorArray.add(line);
+				resourcesArray.add(line);
 			}
 			reader.close();
 		} catch (MalformedURLException e) {
@@ -381,10 +437,10 @@ class SensorsListModel extends AbstractListModel {
 	}
 
 	public int getSize() {
-		return sensorArray.size();
+		return resourcesArray.size();
 	}
 
 	public Object getElementAt(int n) {
-		return sensorArray.get(n);
+		return resourcesArray.get(n);
 	}
 }

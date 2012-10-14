@@ -8,12 +8,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.handler.AbstractHandler;
 
+import sensors.Sensor;
+import sensors.SensorDataCollector;
+
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SubscriptionsHandler extends AbstractHandler {
+	private SensorDataCollector sensorDataCollector;
 
-	public SubscriptionsHandler() {
+	public SubscriptionsHandler(SensorDataCollector sensorDataCollectorInput) {
+		this.sensorDataCollector = sensorDataCollectorInput;
 	}
 
 	public void handle(String target, HttpServletRequest request,
@@ -22,6 +28,16 @@ public class SubscriptionsHandler extends AbstractHandler {
 
 		Pattern p = Pattern.compile("^/.[a-z]*/(.[\\d]*)$");
 		Matcher m = p.matcher(request.getRequestURI());
+		
+		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9]*)$");
+		Matcher metricListMatcher = metricListPattern.matcher(request.getRequestURI());
+		
+		
+//		System.out.println(request.getRequestURI());
+//		if(metricListMatcher.find()){
+//			System.out.println(metricListMatcher.group(1));
+//		}
+//		
 
 		if (request.getRequestURI().equalsIgnoreCase("/subscriptions/")
 				&& request.getMethod().equalsIgnoreCase("POST")) {
@@ -32,17 +48,33 @@ public class SubscriptionsHandler extends AbstractHandler {
 			// response.getWriter().println("Wpisać listę");
 		} else if (request.getRequestURI().equalsIgnoreCase("/subscriptions/")
 				&& request.getMethod().equalsIgnoreCase("GET")) {
+			
 			// Wypisz listę sensorów
 			response.setContentType("text/html");
 			response.setStatus(HttpServletResponse.SC_OK);
-			 response.getWriter().println("cpu-usage\n" +
-			 "memory-usage\n");
+			ArrayList<String> listResources = sensorDataCollector.listResources();
+			
+			for (String resource : listResources) {
+				response.getWriter().println(resource);
+			}
 		} else if (m.find() && request.getMethod().equalsIgnoreCase("GET")) {
 			// TODO: poszedł odpowiedni GET o numerze m.group(1)
 			response.setContentType("text/html");
 			response.setStatus(HttpServletResponse.SC_OK);
 
-		} else {
+		} else if (metricListMatcher.find() && request.getMethod().equalsIgnoreCase("GET")) {
+			// TODO: poszedł odpowiedni GET o numerze metricListMatcher.group(1)
+//			System.out.println();
+			response.setContentType("text/html");
+			response.setStatus(HttpServletResponse.SC_OK);
+			
+			ArrayList<String> listMetrics = sensorDataCollector.listMetrics(metricListMatcher.group(1));
+			
+			for (String metric : listMetrics) {
+				response.getWriter().println(metric);
+			}
+
+		}else {
 			response.setContentType("text/html");
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			response.getWriter().println("<h1>Nie znaleziono</h1>");

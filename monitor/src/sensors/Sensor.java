@@ -1,20 +1,26 @@
 package sensors;
 
 public class Sensor {
-	public Sensor(String name) {
-		this.name = name;
+	public Sensor(String resource, String metric) {
+		this.resource = resource;
+		this.metric = metric;
 	}
 	
-	public String getName() {
-		return name;
+	public String getResource() {
+		return resource;
 	}
-	public Snapshot getLastSnapshot() {
-		return lastSnapshot;
-	}
-	public void updateSnapshot(Snapshot snapshot) {
-		lastSnapshot = snapshot;
+	public String getMetric() {
+		return metric;
 	}
 
-	private String name;
-	private Snapshot lastSnapshot;
+	public float getLastMeasurement() {
+		return lastValue;
+	}
+	public void updateMeasurement(float value) {
+		lastValue = value;
+	}
+
+	private String resource;
+	private String metric;
+	private float lastValue;
 }

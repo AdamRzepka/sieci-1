@@ -1,6 +1,5 @@
 package sensors;
 import java.io.IOException;
-
 import network.MessageQueue;
 
 public class SelectorTest {
@@ -13,6 +12,7 @@ public class SelectorTest {
 		MessageQueue queue = new MessageQueue();
 		new SensorDataCollector(queue);
 		queue.run();
+		
 	}
 
 }

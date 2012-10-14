@@ -132,7 +132,7 @@ public class SensorDataCollector {
 	 * 
 	 * @return
 	 */
-	ArrayList<String> listResources() {
+	public ArrayList<String> listResources() {
 		// TODO zmienić reprezentację sensorów, żeby to zczytywanie było szybsze
 		// (sortowanie?)
 		ArrayList<String> resources = new ArrayList<String>();
@@ -152,7 +152,7 @@ public class SensorDataCollector {
 	 * @param resource
 	 * @return
 	 */
-	ArrayList<String> listMetrics(String resource) {
+	public ArrayList<String> listMetrics(String resource) {
 		ArrayList<String> metrics = new ArrayList<String>();
 		for (Sensor sensor : sensors) {
 			if (sensor.getResource().equals(resource)

@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.handler.AbstractHandler;
 
-import sensors.Sensor;
 import sensors.SensorDataCollector;
 
 import java.util.ArrayList;

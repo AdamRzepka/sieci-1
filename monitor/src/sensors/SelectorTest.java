@@ -1,5 +1,5 @@
 package sensors;
-//import http.HTTPServer;
+import http.HTTPServer;
 
 import network.MessageQueue;
 
@@ -10,8 +10,8 @@ public class SelectorTest {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-//		HTTPServer server = new HTTPServer();
-//		server.run();
+		HTTPServer server = new HTTPServer();
+		server.run();
 		
 		MessageQueue queue = new MessageQueue();
 		new SensorDataCollector(queue);

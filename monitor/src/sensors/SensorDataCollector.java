@@ -81,7 +81,7 @@ public class SensorDataCollector {
 			String[] tokens = msg.split("#");
 			sensor = makeSensor(tokens[0], tokens[1]);
 			// tymczasowo do testow:
-			addSensorUpdateListener(sensor, new Distributor(messageQueue, sensor));
+			// new Distributor(messageQueue, sensor, SensorDataCollector.this);
 		}
 
 		void updateMeasurement(String msg) {

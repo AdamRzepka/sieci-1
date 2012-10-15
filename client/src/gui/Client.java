@@ -20,10 +20,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -397,7 +403,27 @@ public class Client extends javax.swing.JFrame {
 				}
 			}
 		});
-
+		
+		SocketChannel channel = null;
+		
+		// Te dane trzeba uzupełnić na podstawie http (co najmniej port;P).
+		// I przenieść kod otwierający socket w odpowiednie miejsce (po otrzymaniu portu).
+		String host = "localhost";
+		int port = 12098; // port wzięty z sufitu. TODO zastąpić prawidlowym
+		
+		try {
+			channel = SocketChannel.open(new InetSocketAddress(host, port));
+			channel.configureBlocking(false);
+		} catch (IOException e) {
+			javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) SensorsInformationTabs
+					.getSelectedComponent();
+			javax.swing.JViewport viewPort = (javax.swing.JViewport) scrollPane
+					.getViewport();
+			javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
+					.getView();
+			textArea.setText(String.format("Unable to connect to %s:%d",host, port));
+		}
+		
 		while (true) {
 			try {
 				Thread.currentThread().sleep(1000);// sleep for 1000 ms
@@ -409,8 +435,25 @@ public class Client extends javax.swing.JFrame {
 					javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
 							.getView();
 
-					// TODO: wyświetlanie informacji o konkretnej metryce....
-					// textArea.setText("sdf");
+					ByteBuffer buff = ByteBuffer.allocate(1024);
+					int ret = channel.read(buff);
+					buff.flip();
+					if (ret > 0) {
+						String msg = Charset.defaultCharset().decode(buff).toString();
+						// format wiadomosci: #zasob#metryka#wartosc#
+						String[] tokens = msg.split("#");
+						// Do wiadomości mogą czasem dostać się jakieś śmieci (szczególnie przy pierwszej wiadomości),
+						// dlatego sprawdzamy poprawność formatu;
+						if (tokens.length >= 4 && tokens[0].isEmpty())
+							textArea.setText(tokens[3]);
+					}
+					else if (ret < 0) {
+						textArea.setText("Subscritpion not available");
+					}
+					else {
+						// Serwer jeszcze nic nie wysłał
+					}
+
 				}
 
 			} catch (Exception ie) {

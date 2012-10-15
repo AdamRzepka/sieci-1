@@ -79,8 +79,7 @@ public class SensorDataCollector {
 
 		void createSensor(String msg) {
 			String[] tokens = msg.split("#");
-			sensor = new Sensor(tokens[0], tokens[1]);
-			sensors.add(sensor);
+			sensor = makeSensor(tokens[0], tokens[1]);
 			// tymczasowo do testow:
 			addSensorUpdateListener(sensor, new Distributor(messageQueue, sensor));
 		}
@@ -182,6 +181,12 @@ public class SensorDataCollector {
 		return sensors;
 	}
 
+	// Tworzenie sensorów tylko przez tę metodę!
+	Sensor makeSensor(String resource, String metric) {
+		Sensor sensor = new Sensor(resource, metric);
+		sensors.add(sensor);
+		return sensor;
+	}
 	private MessageQueue messageQueue;
 	private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 	private HashMap<Sensor, SensorUpdateListener> listeners = new HashMap<Sensor, SensorUpdateListener>();

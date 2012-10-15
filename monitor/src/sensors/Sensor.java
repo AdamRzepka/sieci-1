@@ -1,7 +1,12 @@
 package sensors;
 
 public class Sensor {
-	public Sensor(String resource, String metric) {
+	/**
+	 * Sensory tworzone są tylko przez klasę SensorDataCollector
+	 * @param resource
+	 * @param metric
+	 */
+	Sensor(String resource, String metric) {
 		this.resource = resource;
 		this.metric = metric;
 	}

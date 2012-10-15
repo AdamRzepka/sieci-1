@@ -243,7 +243,7 @@ public class Client extends javax.swing.JFrame {
 						.getSelectedValue().toString());
 			
 			try {
-				Pattern p = Pattern.compile("^(.[a-zA-Z0-9\\-_]*)#(.[a-zA-Z0-9\\-_]*)$");
+				Pattern p = Pattern.compile("^(.[a-zA-Z0-9\\.\\-_]*)#(.[a-zA-Z0-9\\-_]*)$");
 				Matcher m = p.matcher(AvailableSensorsList
 						.getSelectedValue().toString());
 				

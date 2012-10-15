@@ -30,7 +30,7 @@ public class SubscriptionsHandler extends AbstractHandler {
 		Pattern p = Pattern.compile("^/.[a-z]*/(.[\\d]*)$");
 		Matcher m = p.matcher(request.getRequestURI());
 		
-		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9]*)$");
+		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9\\.]*)$");
 		Matcher metricListMatcher = metricListPattern.matcher(request.getRequestURI());
 		
 

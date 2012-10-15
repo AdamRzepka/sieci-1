@@ -7,9 +7,8 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Iterator;
 import java.util.Random;
 
 import network.ChannelSelectionHandler;
@@ -24,10 +23,10 @@ public class Distributor implements ChannelSelectionHandler,
 		SensorUpdateListener {
 	private static int instancesCount = 0;
 
-	public Distributor(MessageQueue messageQueue, Sensor sensor) {
+	public Distributor(MessageQueue messageQueue, Sensor sensor, SensorDataCollector collector) {
 		this.sensor = sensor;
 		this.id = instancesCount++;
-		
+
 		ServerSocketChannel channel;
 		try {
 			channel = ServerSocketChannel.open();
@@ -39,7 +38,8 @@ public class Distributor implements ChannelSelectionHandler,
 					channel.bind(new InetSocketAddress(port));
 					bound = true;
 					this.port = port;
-					System.out.printf("Subskrybcja %s:%s na porcie %d\n", sensor.getResource(), sensor.getMetric(), port);
+					System.out.printf("Subskrybcja %s:%s na porcie %d\n",
+							sensor.getResource(), sensor.getMetric(), port);
 				} catch (IOException e) {
 					// port zajety; próbuj jeszcze raz
 				}
@@ -51,11 +51,21 @@ public class Distributor implements ChannelSelectionHandler,
 			e.printStackTrace();
 			System.exit(1); // temporary
 		}
+		
+		collector.addSensorUpdateListener(sensor, this);
 
 	}
 
 	public int getPort() {
 		return port;
+	}
+
+	public Sensor getSensor() {
+		return sensor;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	@Override
@@ -81,22 +91,22 @@ public class Distributor implements ChannelSelectionHandler,
 		String msg = createMessage(sensor);
 		System.out.printf("Wysylanie wiadomosci %s\n", msg);
 		ByteBuffer buff = ByteBuffer.wrap(msg.getBytes());
-		for (SocketChannel socket : clients) {
+		Iterator<SocketChannel> it = clients.iterator();
+		while (it.hasNext()) {
 			try {
+				SocketChannel socket = it.next();
 				socket.write(buff);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.exit(1); // temporary
+				System.out.println("Client no longer available");
+				it.remove();
 			}
 		}
 	}
 
 	private String createMessage(Sensor sensor) {
-		// format: zasob, metryka, timestamp, wartosc
-		return String.format("%s#%s#%s#%f", sensor.getResource(), sensor.getMetric(),
-				DateFormat.getInstance().format(new Date()),
-				sensor.getLastMeasurement());
+		// format: #zasob#metryka#timestamp#wartosc#
+		return String.format("#%s#%s#%f#", sensor.getResource(),
+				sensor.getMetric(), sensor.getLastMeasurement());
 	}
 
 	private ArrayList<SocketChannel> clients = new ArrayList<SocketChannel>();

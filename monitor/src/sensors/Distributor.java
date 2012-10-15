@@ -92,10 +92,8 @@ public class Distributor implements ChannelSelectionHandler,
 	}
 
 	private String createMessage(Sensor sensor) {
-		String msg = "<measurement resourceId=\"%s\" metric=\"%s\">\n"
-				+ "<timestamp>%s</timestamp>\n" + "<value>%f</value>\n"
-				+ "</measurement>";
-		return String.format(msg, sensor.getResource(), sensor.getMetric(),
+		// format: zasob, metryka, timestamp, wartosc
+		return String.format("%s#%s#%s#%f", sensor.getResource(), sensor.getMetric(),
 				DateFormat.getInstance().format(new Date()),
 				sensor.getLastMeasurement());
 	}

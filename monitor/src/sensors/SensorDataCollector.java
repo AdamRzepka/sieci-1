@@ -10,6 +10,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import network.ChannelSelectionHandler;
 import network.MessageQueue;
@@ -55,6 +56,7 @@ public class SensorDataCollector {
 								socketChannel.getRemoteAddress().toString());
 						messageQueue.unregisterChannel(socketChannel);
 						socketChannel.close();
+						// TODO: sprzatanie
 					} else {
 						System.out.printf("New message from %s:\n",
 								socketChannel.getRemoteAddress().toString());
@@ -85,6 +87,10 @@ public class SensorDataCollector {
 				createSensor(msg);
 			String[] tokens = msg.split("#");
 			sensor.updateMeasurement(Float.parseFloat(tokens[2]));
+			if (listeners.containsKey(sensor)) {
+				listeners.get(sensor).onUpdate(sensor);
+			}
+
 		}
 
 		private Sensor sensor;
@@ -163,6 +169,10 @@ public class SensorDataCollector {
 
 		return metrics;
 	}
+	
+	public void addSensorUpdateListener(Sensor sensor, SensorUpdateListener listener) {
+		
+	}
 
 	public ArrayList<Sensor> getSensors() {
 		return sensors;
@@ -170,4 +180,5 @@ public class SensorDataCollector {
 
 	private MessageQueue messageQueue;
 	private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
+	private HashMap<Sensor, SensorUpdateListener> listeners = new HashMap<Sensor, SensorUpdateListener>();
 }

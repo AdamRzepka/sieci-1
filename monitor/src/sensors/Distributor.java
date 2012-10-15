@@ -10,6 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 import network.ChannelSelectionHandler;
 import network.MessageQueue;
@@ -19,14 +20,30 @@ import network.MessageQueue;
  * 
  * 
  */
-public class Distributor implements ChannelSelectionHandler {
+public class Distributor implements ChannelSelectionHandler,
+		SensorUpdateListener {
+	private static int instancesCount = 0;
 
-	public Distributor(MessageQueue messageQueue, Sensor sensor, int port ) {
+	public Distributor(MessageQueue messageQueue, Sensor sensor) {
 		this.sensor = sensor;
+		this.id = instancesCount++;
 		
 		ServerSocketChannel channel;
 		try {
 			channel = ServerSocketChannel.open();
+			boolean bound = false;
+			while (!bound) {
+				try {
+					// losuj port pomiedzy 1000, a 65000
+					int port = 1000 + new Random().nextInt(64000);
+					channel.bind(new InetSocketAddress(port));
+					bound = true;
+					this.port = port;
+				} catch (IOException e) {
+					// port zajety; próbuj jeszcze raz
+				}
+			}
+
 			channel.bind(new InetSocketAddress(port));
 			messageQueue.registerChannel(channel, this, SelectionKey.OP_ACCEPT);
 		} catch (IOException e) {
@@ -34,21 +51,11 @@ public class Distributor implements ChannelSelectionHandler {
 			e.printStackTrace();
 			System.exit(1); // temporary
 		}
-		
+
 	}
 
-	void update() {
-		String msg = createMessage(sensor);
-		ByteBuffer buff = ByteBuffer.wrap(msg.getBytes());
-		for (SocketChannel socket : clients) {
-			try {
-				socket.write(buff);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.exit(1); // temporary
-			}
-		}
+	public int getPort() {
+		return port;
 	}
 
 	@Override
@@ -69,6 +76,21 @@ public class Distributor implements ChannelSelectionHandler {
 		}
 	}
 
+	@Override
+	public void onUpdate(Sensor sensor) {
+		String msg = createMessage(sensor);
+		ByteBuffer buff = ByteBuffer.wrap(msg.getBytes());
+		for (SocketChannel socket : clients) {
+			try {
+				socket.write(buff);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.exit(1); // temporary
+			}
+		}
+	}
+
 	private String createMessage(Sensor sensor) {
 		String msg = "<measurement resourceId=\"%s\" metric=\"%s\">\n"
 				+ "<timestamp>%s</timestamp>\n" + "<value>%f</value>\n"
@@ -80,4 +102,6 @@ public class Distributor implements ChannelSelectionHandler {
 
 	private ArrayList<SocketChannel> clients;
 	private Sensor sensor;
+	private int port;
+	private int id;
 }

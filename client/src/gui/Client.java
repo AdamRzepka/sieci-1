@@ -249,9 +249,7 @@ public class Client extends javax.swing.JFrame {
 						.getSelectedValue().toString());
 			
 			try {
-				Pattern p = Pattern.compile("^(.[a-zA-Z0-9\\-_]*)#(.[a-zA-Z0-9\\-_]*)$");
-				System.out.println(AvailableSensorsList
-						.getSelectedValue().toString());
+				Pattern p = Pattern.compile("^(.[a-zA-Z0-9\\.\\-_]*)#(.[a-zA-Z0-9\\-_]*)$");
 				Matcher m = p.matcher(AvailableSensorsList
 						.getSelectedValue().toString());
 				
@@ -262,7 +260,6 @@ public class Client extends javax.swing.JFrame {
 				String charset = "UTF-8";
 				String query = new String();
 				if(m.find()){
-					System.out.println(m.group(1)+m.group(2));
 					query = m.group(1)+"\n"+m.group(2);
 				}
 				
@@ -282,14 +279,21 @@ public class Client extends javax.swing.JFrame {
 				// Get the response
 				BufferedReader reader = new BufferedReader(new InputStreamReader(
 						conn.getInputStream()));
-				String line;
 				
+				String resource = reader.readLine();
+				String metric = reader.readLine();
+				String port = reader.readLine();
 				
-				while ((line = reader.readLine()) != null) {
-//					AvaibleMetricsListModel.addElement(AvailableResourcesList.getSelectedValue().toString()+"#"+line);
-					System.out.println(line);
-				}
 				reader.close();
+				
+				
+				
+				System.out.println(resource+", "+metric+", "+port);
+				
+				
+				
+				// TODO: Tutaj skończyło się pobieranie informacji od serwera
+				
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -525,10 +529,14 @@ class ResourcesListModel extends AbstractListModel {
 			reader.close();
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
+			System.out.println("MalformedURLException");
 			e.printStackTrace();
+			System.exit(-1);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Włącz serwer HTTP!");
+//			e.printStackTrace();
+			System.exit(-1);
 		}
 
 	}

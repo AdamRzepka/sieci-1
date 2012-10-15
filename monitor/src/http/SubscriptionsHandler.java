@@ -30,7 +30,7 @@ public class SubscriptionsHandler extends AbstractHandler {
 		Pattern p = Pattern.compile("^/.[a-z]*/(.[\\d]*)$");
 		Matcher m = p.matcher(request.getRequestURI());
 		
-		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9]*)$");
+		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9\\.]*)$");
 		Matcher metricListMatcher = metricListPattern.matcher(request.getRequestURI());
 		
 
@@ -38,18 +38,23 @@ public class SubscriptionsHandler extends AbstractHandler {
 				&& request.getMethod().equalsIgnoreCase("POST")) {
 			// TODO: Poszedł post do servera
 			
-//			System.out.print(request.getMethod());
-			
 			String resource = request.getReader().readLine();
 			String metric = request.getReader().readLine();
-			
-			System.out.println(resource);
-			System.out.println(metric);
-			
 			Sensor sensor = null;
 			sensor = sensorDataCollector.findSensor(resource, metric);
+			
+			Subscription distributor = new Subscription(sensorDataCollector.getMessageQueue(), sensor, sensorDataCollector);
+			
+			
+
+			
+			
 			if(sensor != null){
-				System.out.println(Float.toString(sensor.getLastMeasurement()));
+				response.getWriter().println(
+						resource+"\n"+
+						metric+"\n"+
+						distributor.getPort()
+						);
 			}
 			
 

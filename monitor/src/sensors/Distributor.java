@@ -23,19 +23,21 @@ public class Distributor implements ChannelSelectionHandler,
 		SensorUpdateListener {
 	private static int instancesCount = 0;
 
-	public Distributor(MessageQueue messageQueue, Sensor sensor, SensorDataCollector collector) {
+	public Distributor(MessageQueue messageQueue, Sensor sensor,
+			SensorDataCollector collector) {
 		this.sensor = sensor;
 		this.id = instancesCount++;
+		this.messageQueue = messageQueue;
+		this.collector = collector;
 
-		ServerSocketChannel channel;
 		try {
-			channel = ServerSocketChannel.open();
+			serverChannel = ServerSocketChannel.open();
 			boolean bound = false;
 			while (!bound) {
 				try {
 					// losuj port pomiedzy 1000, a 65000
 					int port = 1000 + new Random().nextInt(64000);
-					channel.bind(new InetSocketAddress(port));
+					serverChannel.bind(new InetSocketAddress(port));
 					bound = true;
 					this.port = port;
 					System.out.printf("Subskrybcja %s:%s na porcie %d\n",
@@ -45,13 +47,14 @@ public class Distributor implements ChannelSelectionHandler,
 				}
 			}
 
-			messageQueue.registerChannel(channel, this, SelectionKey.OP_ACCEPT);
+			messageQueue.registerChannel(serverChannel, this,
+					SelectionKey.OP_ACCEPT);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(1); // temporary
 		}
-		
+
 		collector.addSensorUpdateListener(sensor, this);
 
 	}
@@ -103,14 +106,58 @@ public class Distributor implements ChannelSelectionHandler,
 		}
 	}
 
+	@Override
+	public void onDisconnected(Sensor sensor) {
+		close();
+	}
+
 	private String createMessage(Sensor sensor) {
 		// format: #zasob#metryka#timestamp#wartosc#
 		return String.format("#%s#%s#%f#", sensor.getResource(),
 				sensor.getMetric(), sensor.getLastMeasurement());
 	}
 
+	public void close() {
+		if (serverChannel != null) {
+			messageQueue.unregisterChannel(serverChannel);
+			serverChannel = null;
+			for (SocketChannel client : clients) {
+				try {
+					client.close();
+				} catch (IOException e) {
+					// mały problem - można olać :P
+				}
+			}
+			clients.clear();
+			collector.removeSensorListener(sensor, this);
+		}
+	}
+
+	/**
+	 * Sprawdza czy skojarzony channel jest prawidlowy. Jezeli nie, to obiekt
+	 * nie nadaje się dłużej do użytku
+	 * 
+	 * @return
+	 */
+	public boolean isValid() {
+		return (serverChannel != null);
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			close();
+		} finally {
+			super.finalize();
+		}
+	}
+
 	private ArrayList<SocketChannel> clients = new ArrayList<SocketChannel>();
+	private ServerSocketChannel serverChannel;
+	private MessageQueue messageQueue;
+	private SensorDataCollector collector;
 	private Sensor sensor;
 	private int port;
 	private int id;
+
 }

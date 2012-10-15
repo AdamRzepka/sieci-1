@@ -29,8 +29,9 @@ public class SensorDataCollector {
 							.getRemoteAddress().toString());
 
 					messageQueue.registerChannel(socket,
-							new SensorMessageHandler(), SelectionKey.OP_READ);
-					
+							new SensorMessageHandler(socket),
+							SelectionKey.OP_READ);
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -42,10 +43,15 @@ public class SensorDataCollector {
 
 	private class SensorMessageHandler implements ChannelSelectionHandler {
 
+		public SensorMessageHandler(SocketChannel socket) {
+			this.socket = socket;
+		}
+
 		@Override
 		public void onSelected(SelectableChannel channel,
 				int readyOperationsMask) {
-			if ((readyOperationsMask & SelectionKey.OP_READ) != 0) {
+			if ((readyOperationsMask & SelectionKey.OP_READ) != 0
+					&& channel == this.socket) {
 				SocketChannel socketChannel = (SocketChannel) channel;
 				try {
 					ByteBuffer buff = ByteBuffer.allocate(1024);
@@ -55,9 +61,8 @@ public class SensorDataCollector {
 					if (readed == -1) {
 						System.out.printf("Client %s has disconnected\n",
 								socketChannel.getRemoteAddress().toString());
-						messageQueue.unregisterChannel(socketChannel);
-						socketChannel.close();
-						// TODO: sprzatanie
+
+						close();
 					} else {
 						System.out.printf("New message from %s:\n",
 								socketChannel.getRemoteAddress().toString());
@@ -66,7 +71,7 @@ public class SensorDataCollector {
 						System.out.println(cbuff.toString());
 
 						updateMeasurement(cbuff.toString());
-						
+
 					}
 
 				} catch (IOException e) {
@@ -74,6 +79,32 @@ public class SensorDataCollector {
 					e.printStackTrace();
 					System.exit(1); // temporary
 				}
+			}
+		}
+
+		void close() {
+			if (socket != null) {
+				try {
+					socket.close();
+					messageQueue.unregisterChannel(socket);
+					if (listeners.containsKey(sensor)) {
+						for (SensorUpdateListener listener : listeners
+								.get(sensor))
+							listener.onDisconnected(sensor);
+					}
+					socket = null;
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		}
+		
+		@Override
+		protected void finalize() throws Throwable{
+			try {
+				close();
+			} finally {
+				super.finalize();
 			}
 		}
 
@@ -90,12 +121,14 @@ public class SensorDataCollector {
 			String[] tokens = msg.split("#");
 			sensor.updateMeasurement(Float.parseFloat(tokens[2]));
 			if (listeners.containsKey(sensor)) {
-				listeners.get(sensor).onUpdate(sensor);
+				for (SensorUpdateListener listener : listeners.get(sensor))
+					listener.onUpdate(sensor);
 			}
 
 		}
 
 		private Sensor sensor;
+		private SocketChannel socket;
 
 	}
 
@@ -109,7 +142,8 @@ public class SensorDataCollector {
 			serverChannel.bind(new InetSocketAddress(SensorDataCollector.PORT));
 			messageQueue.registerChannel(serverChannel,
 					new NewConnectionHandler(), SelectionKey.OP_ACCEPT);
-			System.out.printf("Oczekiwanie na sensory na porcie %d\n", SensorDataCollector.PORT);
+			System.out.printf("Oczekiwanie na sensory na porcie %d\n",
+					SensorDataCollector.PORT);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -172,9 +206,21 @@ public class SensorDataCollector {
 
 		return metrics;
 	}
-	
-	public void addSensorUpdateListener(Sensor sensor, SensorUpdateListener listener) {
-		listeners.put(sensor, listener);
+
+	public void addSensorUpdateListener(Sensor sensor,
+			SensorUpdateListener listener) {
+		if (!listeners.containsKey(sensor)) {
+			listeners.put(sensor, new ArrayList<SensorUpdateListener>());
+		}
+		listeners.get(sensor).add(listener);
+	}
+
+	public void removeSensorListener(Sensor sensor,
+			SensorUpdateListener listener) {
+		ArrayList<SensorUpdateListener> listenersList = listeners.get(sensor);
+		if (listenersList != null) {
+			listenersList.remove(listener);
+		}
 	}
 
 	public ArrayList<Sensor> getSensors() {
@@ -187,7 +233,8 @@ public class SensorDataCollector {
 		sensors.add(sensor);
 		return sensor;
 	}
+
 	private MessageQueue messageQueue;
 	private ArrayList<Sensor> sensors = new ArrayList<Sensor>();
-	private HashMap<Sensor, SensorUpdateListener> listeners = new HashMap<Sensor, SensorUpdateListener>();
+	private HashMap<Sensor, ArrayList<SensorUpdateListener>> listeners = new HashMap<Sensor, ArrayList<SensorUpdateListener>>();
 }

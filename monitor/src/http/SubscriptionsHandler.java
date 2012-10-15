@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.handler.AbstractHandler;
 
+import sensors.Distributor;
 import sensors.Sensor;
 import sensors.SensorDataCollector;
 
@@ -37,18 +38,23 @@ public class SubscriptionsHandler extends AbstractHandler {
 				&& request.getMethod().equalsIgnoreCase("POST")) {
 			// TODO: Poszedł post do servera
 			
-//			System.out.print(request.getMethod());
-			
 			String resource = request.getReader().readLine();
 			String metric = request.getReader().readLine();
-			
-			System.out.println(resource);
-			System.out.println(metric);
-			
 			Sensor sensor = null;
 			sensor = sensorDataCollector.findSensor(resource, metric);
+			
+			Distributor distributor = new Distributor(sensorDataCollector.getMessageQueue(), sensor);
+			
+			
+
+			
+			
 			if(sensor != null){
-				System.out.println(Float.toString(sensor.getLastMeasurement()));
+				response.getWriter().println(
+						resource+"\n"+
+						metric+"\n"+
+						distributor.getPort()
+						);
 			}
 			
 

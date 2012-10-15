@@ -153,6 +153,10 @@ public class SensorDataCollector {
 
 		return resources;
 	}
+	
+	public MessageQueue getMessageQueue(){
+		return this.messageQueue;
+	}
 
 	/**
 	 * Listuje wszystkie metryki, dla podanego zasobu, dla których istnieje co

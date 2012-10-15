@@ -39,12 +39,12 @@ public class Distributor implements ChannelSelectionHandler,
 					channel.bind(new InetSocketAddress(port));
 					bound = true;
 					this.port = port;
+					System.out.printf("Subskrybcja %s:%s na porcie %d\n", sensor.getResource(), sensor.getMetric(), port);
 				} catch (IOException e) {
 					// port zajety; próbuj jeszcze raz
 				}
 			}
 
-			channel.bind(new InetSocketAddress(port));
 			messageQueue.registerChannel(channel, this, SelectionKey.OP_ACCEPT);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -79,6 +79,7 @@ public class Distributor implements ChannelSelectionHandler,
 	@Override
 	public void onUpdate(Sensor sensor) {
 		String msg = createMessage(sensor);
+		System.out.printf("Wysylanie wiadomosci %s\n", msg);
 		ByteBuffer buff = ByteBuffer.wrap(msg.getBytes());
 		for (SocketChannel socket : clients) {
 			try {
@@ -98,7 +99,7 @@ public class Distributor implements ChannelSelectionHandler,
 				sensor.getLastMeasurement());
 	}
 
-	private ArrayList<SocketChannel> clients;
+	private ArrayList<SocketChannel> clients = new ArrayList<SocketChannel>();
 	private Sensor sensor;
 	private int port;
 	private int id;

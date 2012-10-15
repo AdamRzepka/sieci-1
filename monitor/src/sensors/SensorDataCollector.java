@@ -30,6 +30,7 @@ public class SensorDataCollector {
 
 					messageQueue.registerChannel(socket,
 							new SensorMessageHandler(), SelectionKey.OP_READ);
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -80,6 +81,8 @@ public class SensorDataCollector {
 			String[] tokens = msg.split("#");
 			sensor = new Sensor(tokens[0], tokens[1]);
 			sensors.add(sensor);
+			// tymczasowo do testow:
+			addSensorUpdateListener(sensor, new Distributor(messageQueue, sensor));
 		}
 
 		void updateMeasurement(String msg) {
@@ -107,6 +110,7 @@ public class SensorDataCollector {
 			serverChannel.bind(new InetSocketAddress(SensorDataCollector.PORT));
 			messageQueue.registerChannel(serverChannel,
 					new NewConnectionHandler(), SelectionKey.OP_ACCEPT);
+			System.out.printf("Oczekiwanie na sensory na porcie %d\n", SensorDataCollector.PORT);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -171,7 +175,7 @@ public class SensorDataCollector {
 	}
 	
 	public void addSensorUpdateListener(Sensor sensor, SensorUpdateListener listener) {
-		
+		listeners.put(sensor, listener);
 	}
 
 	public ArrayList<Sensor> getSensors() {

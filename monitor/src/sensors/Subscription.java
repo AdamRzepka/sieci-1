@@ -19,11 +19,11 @@ import network.MessageQueue;
  * 
  * 
  */
-public class Distributor implements ChannelSelectionHandler,
+public class Subscription implements ChannelSelectionHandler,
 		SensorUpdateListener {
 	private static int instancesCount = 0;
 
-	public Distributor(MessageQueue messageQueue, Sensor sensor,
+	public Subscription(MessageQueue messageQueue, Sensor sensor,
 			SensorDataCollector collector) {
 		this.sensor = sensor;
 		this.id = instancesCount++;

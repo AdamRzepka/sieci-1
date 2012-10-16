@@ -65,6 +65,7 @@ public class SubscriptionsHandler extends AbstractHandler {
 
 			response.setContentType("text/plain");
 			response.setStatus(HttpServletResponse.SC_CREATED);
+			System.out.printf("Nowa subskrypcja o id %d utworzona\n", subscription.getId());
 			// response.getWriter().println("Wpisać listę");
 		} else if (request.getRequestURI().equalsIgnoreCase("/subscriptions/")
 				&& request.getMethod().equalsIgnoreCase("GET")) {

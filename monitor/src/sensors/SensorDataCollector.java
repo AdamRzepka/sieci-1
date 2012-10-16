@@ -59,7 +59,7 @@ public class SensorDataCollector {
 					buff.flip();
 
 					if (readed == -1) {
-						System.out.printf("Client %s has disconnected\n",
+						System.out.printf("Sensor %s has disconnected\n",
 								socketChannel.getRemoteAddress().toString());
 
 						close();

@@ -484,7 +484,7 @@ public class Client extends javax.swing.JFrame {
 				}
 
 				sub = new Subscription(Integer.parseInt(id), resource, metric,
-						monitor, Integer.parseInt(httpPortText.getText()),
+						hostNameText.getText(), Integer.parseInt(httpPortText.getText()),
 						port, channel);
 
 				// TODO: Tutaj skończyło się pobieranie informacji od serwera
@@ -522,33 +522,48 @@ public class Client extends javax.swing.JFrame {
 		// Dodanie nowego sensora na liście connected, jeżeli któryś jest
 		// zaznaczony oraz nie ma go już na liście connected
 		if (!ConnectedSensorsList.isSelectionEmpty()) {
+			Subscription sub = subscriptions.get(ConnectedSensorsList
+					.getSelectedIndex());
 			SensorsInformationTabs
 					.removeTabAt(ConnectedSensorsListModel
 							.indexOf(ConnectedSensorsList.getSelectedValue()
 									.toString()));
 			ConnectedSensorsListModel.removeElement(ConnectedSensorsList
 					.getSelectedValue().toString());
-			Subscription sub = subscriptions.get(ConnectedSensorsList
-					.getSelectedIndex());
-			// try {
-			// sub.getChannel().close();
-			// } catch (IOException e) {
-			// // TODO Auto-generated catch block
-			// // ignore
-			// }
-			// try {
-			// URL url = new URL(sub.getHost() + ":" + new
-			// Integer(sub.getHttpPort()).toString());
-			// HttpURLConnection urlConnection =
-			// (HttpURLConnection)url.openConnection();
-			// urlConnection.setRequestMethod("DELETE");
-			//
-			// } catch (MalformedURLException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (IOException e) {
-			//
-			// }
+			try {
+				// zamkniecie portu
+				sub.getChannel().close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				// ignore
+			}
+			try {
+				// usuniecie subskrypcji
+				URL url = new URL("http://" + sub.getHost() + ":"
+						+ new Integer(sub.getHttpPort()).toString());
+				HttpURLConnection conn = (HttpURLConnection) url
+						.openConnection();
+				conn.setRequestMethod("DELETE");
+				OutputStream output = null;
+				conn.setDoOutput(true);
+				try {
+					output = conn.getOutputStream();
+					output.write(String
+							.format("/subscriptions/%d", sub.getId()).getBytes(
+									Charset.defaultCharset()));
+				} finally {
+					if (output != null)
+						try {
+							output.close();
+						} catch (IOException logOrIgnore) {
+						}
+				}
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+
+			}
 
 			subscriptions.remove(sub);
 		}
@@ -623,11 +638,11 @@ public class Client extends javax.swing.JFrame {
 			java.util.logging.Logger.getLogger(Client.class.getName()).log(
 					java.util.logging.Level.SEVERE, null, ex);
 		}
-		
+
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				
+
 				try {
 					instance = new Client();
 					instance.setVisible(true);
@@ -636,10 +651,9 @@ public class Client extends javax.swing.JFrame {
 					System.exit(-1);
 				}
 
-
 			}
 		});
-		
+
 		while (true) {
 			try {
 				Thread.currentThread().sleep(1000);// sleep for 1000 ms
@@ -651,28 +665,36 @@ public class Client extends javax.swing.JFrame {
 					javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
 							.getView();
 
-					SocketChannel channel = instance
-							.getSubscriptions()
-							.get(instance.getConnectedSensorsList()
-									.getSelectedIndex()).getChannel();
+					String tabName = SensorsInformationTabs
+							.getTitleAt(SensorsInformationTabs
+									.getSelectedIndex());
+					String[] tokens = tabName.split("#");
+
+					SocketChannel channel = null;
+					for (Subscription sub : instance.subscriptions) {
+						if (sub.getResource().equalsIgnoreCase(tokens[0])
+								&& sub.getMetric().equalsIgnoreCase(tokens[1])) {
+							channel = sub.getChannel();
+							break;
+						}
+					}
 
 					if (channel != null) {
 						ByteBuffer buff = ByteBuffer.allocate(1024);
 						int ret = channel.read(buff);
 						buff.flip();
 						if (ret > 0) {
-							String msg = Charset.defaultCharset()
-									.decode(buff).toString();
+							String msg = Charset.defaultCharset().decode(buff)
+									.toString();
 							// format wiadomosci:
 							// #zasob#metryka#wartosc#
-							String[] tokens = msg.split("#");
+							tokens = msg.split("#");
 							// Do wiadomości mogą czasem dostać się
 							// jakieś
 							// śmieci (szczególnie przy pierwszej
 							// wiadomości),
 							// dlatego sprawdzamy poprawność formatu;
-							if (tokens.length >= 4
-									&& tokens[0].isEmpty())
+							if (tokens.length >= 4 && tokens[0].isEmpty())
 								textArea.setText(tokens[3]);
 						} else if (ret < 0) {
 							textArea.setText("Subscritpion not available");

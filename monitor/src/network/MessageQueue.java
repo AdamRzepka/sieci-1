@@ -87,12 +87,10 @@ public class MessageQueue {
 			Set<SelectionKey> keys = selector.selectedKeys();
 
 			for (SelectionKey key : keys) {
-				for (ChannelRecord record : channelRecords) {
-					if (key == record.getKey()) {
-						record.getHandler().onSelected(
-								record.getKey().channel(),
-								record.getKey().readyOps());
-						keys.remove(record.getKey());
+				ChannelRecord record = null;
+				for (ChannelRecord r : channelRecords) {
+					if (key == r.getKey()) {
+						record = r;
 						// Ten break jest dosyć istotny: metoda onSelected mogła
 						// spowodować modyfikację channelRecords
 						// (dodanie/usunięcie), więc dalsza iteracja mogłaby
@@ -100,7 +98,13 @@ public class MessageQueue {
 						break;
 					}
 				}
+				if (record != null) {
+					record.getHandler().onSelected(record.getKey().channel(),
+							record.getKey().readyOps());
+				}
 			}
+
+			keys.clear();
 		}
 	}
 }

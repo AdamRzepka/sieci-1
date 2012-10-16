@@ -1,4 +1,4 @@
-package sensors;
+package subscription;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,6 +10,10 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+
+import sensors.Sensor;
+import sensors.SensorDataCollector;
+import sensors.SensorUpdateListener;
 
 import network.ChannelSelectionHandler;
 import network.MessageQueue;
@@ -92,7 +96,6 @@ public class Subscription implements ChannelSelectionHandler,
 	@Override
 	public void onUpdate(Sensor sensor) {
 		String msg = createMessage(sensor);
-		System.out.printf("Wysylanie wiadomosci %s\n", msg);
 		ByteBuffer buff = ByteBuffer.wrap(msg.getBytes());
 		Iterator<SocketChannel> it = clients.iterator();
 		while (it.hasNext()) {

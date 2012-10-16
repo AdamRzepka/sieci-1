@@ -72,7 +72,9 @@ public class Client extends javax.swing.JFrame {
 		SensorsInformationTabs = new javax.swing.JTabbedPane();
 		ConnectedSensorsListModel = new javax.swing.DefaultListModel();
 		AvaibleMetricsListModel = new javax.swing.DefaultListModel();
-
+		hostNameText = new javax.swing.JTextField("http://localhost:8080");
+		connectHostButton = new javax.swing.JButton("Connect to monitor");
+		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
 		AvailableSensorsPanel.setBorder(javax.swing.BorderFactory
@@ -230,6 +232,11 @@ public class Client extends javax.swing.JFrame {
 		getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(layout
 				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(
+						layout.createSequentialGroup()
+							.addComponent(hostNameText)
+							.addGap(10, 10, 10)
+							.addComponent(connectHostButton))
 				.addComponent(SensorsInformationTabs,
 						javax.swing.GroupLayout.DEFAULT_SIZE, 460,
 						Short.MAX_VALUE)
@@ -273,7 +280,11 @@ public class Client extends javax.swing.JFrame {
 
 				.addGroup(
 						layout.createSequentialGroup()
-
+								.addGroup(
+										layout.createParallelGroup(
+												javax.swing.GroupLayout.Alignment.LEADING)
+												.addComponent(hostNameText)
+												.addComponent(connectHostButton))
 								.addGroup(
 										layout.createParallelGroup(
 												javax.swing.GroupLayout.Alignment.LEADING)
@@ -593,7 +604,13 @@ public class Client extends javax.swing.JFrame {
 	private javax.swing.JScrollPane AvailableResourcesScrollPane;
 	private javax.swing.JButton connectToResource;
 	private javax.swing.JButton disconnectFromResource;
+	private javax.swing.JTextField hostNameText;
+	private javax.swing.JButton connectHostButton;
 	private static SocketChannel channel;
+	
+	private String monitorURL;
+	private int subscriptionId;
+	private int subscriptionPort;
 }
 
 // class SensorsListModel extends AbstractListModel {

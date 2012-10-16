@@ -15,6 +15,8 @@
  */
 package gui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -72,8 +74,16 @@ public class Client extends javax.swing.JFrame {
 		SensorsInformationTabs = new javax.swing.JTabbedPane();
 		ConnectedSensorsListModel = new javax.swing.DefaultListModel();
 		AvaibleMetricsListModel = new javax.swing.DefaultListModel();
-		hostNameText = new javax.swing.JTextField("http://localhost:8080");
+		hostNameText = new javax.swing.JTextField("localhost:8080");
 		connectHostButton = new javax.swing.JButton("Connect to monitor");
+		
+		connectHostButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				connectHostClicked();
+			}
+		});
 		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -165,7 +175,8 @@ public class Client extends javax.swing.JFrame {
 		AvailableResourcesPanel.setBorder(javax.swing.BorderFactory
 				.createTitledBorder("Avaible resources"));
 
-		AvailableResourcesList.setModel(new ResourcesListModel());
+		resourcesList = new ResourcesListModel(hostNameText.getText());
+		AvailableResourcesList.setModel(resourcesList);
 		AvailableResourcesScrollPane.setViewportView(AvailableResourcesList);
 
 		javax.swing.GroupLayout AvailableResourcesPanelLayout = new javax.swing.GroupLayout(
@@ -339,6 +350,13 @@ public class Client extends javax.swing.JFrame {
 
 	}
 
+	protected void connectHostClicked() {
+		AvaibleMetricsListModel.clear();
+		resourcesList.clear();
+		resourcesList = new ResourcesListModel(hostNameText.getText());
+		AvailableResourcesList.setModel(resourcesList);
+	}
+
 	private void connectToSensorActionPerformed(java.awt.event.ActionEvent evt) {
 
 		// Dodanie nowego sensora na liście connected, jeżeli któryś jest
@@ -359,7 +377,8 @@ public class Client extends javax.swing.JFrame {
 
 				URL url;
 
-				url = new URL("http://localhost:8080/subscriptions/");
+				String monitor = hostNameText.getText();
+				url = new URL("http://" + monitor + "/subscriptions/");
 
 				String charset = "UTF-8";
 				String query = new String();
@@ -391,19 +410,20 @@ public class Client extends javax.swing.JFrame {
 				String id = reader.readLine();
 				String resource = reader.readLine();
 				String metric = reader.readLine();
+				String subscriptionHost = reader.readLine();
 				String portStr = reader.readLine();
 
 				reader.close();
 
-				System.out.println(id + ", " + resource + ", " + metric + ", "
+				System.out.println(id + ", " + resource + ", " + metric + ", " + subscriptionHost + ", "
 						+ portStr);
 				
 				int port = Integer.parseInt(portStr);
 				try {
-					channel = SocketChannel.open(new InetSocketAddress("localhost", port));
+					channel = SocketChannel.open(new InetSocketAddress(subscriptionHost, port));
 					channel.configureBlocking(false);
 				} catch (IOException e) {
-					res = String.format("Unable to connect to %s:%d\n", "localhost", port);
+					res = String.format("Unable to connect to %s:%d\n", subscriptionHost, port);
 				}
 
 				// TODO: Tutaj skończyło się pobieranie informacji od serwera
@@ -417,7 +437,7 @@ public class Client extends javax.swing.JFrame {
 			}
 
 			// TODO: wybieranie i subskrypcja kanału
-			ConnectedSensorsListModel.addElement(selectedResourceMetric);
+			ConnectedSensorsListModel.addElement(monitorURL + ":" + host + ":" + metric);
 
 			// Dodanie nowej zakładki dla sensora
 			javax.swing.JScrollPane jScrollPane = new javax.swing.JScrollPane();
@@ -442,16 +462,16 @@ public class Client extends javax.swing.JFrame {
 									.toString()));
 			ConnectedSensorsListModel.removeElement(ConnectedSensorsList
 					.getSelectedValue().toString());
-
+			
 		}
 	}
 
 	private void connectToResourceActionPerformed(java.awt.event.ActionEvent evt) {
-		if (!AvailableResourcesList.isSelectionEmpty()) {
+		if (!AvailableResourcesList.isSelectionEmpty() && resourcesList.isConnected()) {
 			try {
 				URL url;
-
-				url = new URL("http://localhost:8080/subscriptions/metrics/"
+				String monitor = hostNameText.getText();
+				url = new URL("http://" + monitor + "/subscriptions/metrics/"
 						+ AvailableResourcesList.getSelectedValue().toString());
 
 				URLConnection conn;
@@ -607,6 +627,7 @@ public class Client extends javax.swing.JFrame {
 	private javax.swing.JTextField hostNameText;
 	private javax.swing.JButton connectHostButton;
 	private static SocketChannel channel;
+	private ResourcesListModel resourcesList;
 	
 	private String monitorURL;
 	private int subscriptionId;
@@ -632,14 +653,15 @@ public class Client extends javax.swing.JFrame {
 
 class ResourcesListModel extends AbstractListModel {
 	private ArrayList<String> resourcesArray = null;
+	private boolean connected = false;
 
-	public ResourcesListModel() {
+	public ResourcesListModel(String monitorName) {
 
 		try {
 			resourcesArray = new ArrayList<String>();
 			URL url;
 
-			url = new URL("http://localhost:8080/subscriptions/");
+			url = new URL("http://" + monitorName + "/subscriptions/");
 
 			URLConnection conn;
 			conn = url.openConnection();
@@ -652,18 +674,23 @@ class ResourcesListModel extends AbstractListModel {
 				resourcesArray.add(line);
 			}
 			reader.close();
+			connected = true;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("MalformedURLException");
-			e.printStackTrace();
-			System.exit(-1);
+			resourcesArray.add("Specified address is incorrect");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Włącz serwer HTTP!");
 			// e.printStackTrace();
-			System.exit(-1);
+			resourcesArray.add("Server not found");
+			resourcesArray.add(String.format("at %s", monitorName));
 		}
 
+	}
+	
+	public boolean isConnected() {
+		return connected;
 	}
 
 	public int getSize() {
@@ -672,5 +699,8 @@ class ResourcesListModel extends AbstractListModel {
 
 	public Object getElementAt(int n) {
 		return resourcesArray.get(n);
+	}
+	public void clear() {
+		resourcesArray.clear();
 	}
 }

@@ -1,18 +1,16 @@
-package sensors;
-
 import http.HTTPServer;
-
 import network.MessageQueue;
+import sensors.SensorDataCollector;
 
-public class SelectorTest {
+
+public class Main {
 
 	/**
 	 * @param args
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-		
-		
+		// TODO Auto-generated method stub
 		MessageQueue queue = new MessageQueue();
 		SensorDataCollector sensorDataCollector = new SensorDataCollector(queue);
 		
@@ -21,7 +19,6 @@ public class SelectorTest {
 		
 		
 		queue.run();
-		
 	}
 
 }

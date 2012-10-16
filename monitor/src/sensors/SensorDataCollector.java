@@ -64,11 +64,8 @@ public class SensorDataCollector {
 
 						close();
 					} else {
-						System.out.printf("New message from %s:\n",
-								socketChannel.getRemoteAddress().toString());
 						CharBuffer cbuff = Charset.defaultCharset()
 								.decode(buff);
-						System.out.println(cbuff.toString());
 
 						updateMeasurement(cbuff.toString());
 
@@ -134,7 +131,7 @@ public class SensorDataCollector {
 
 	private static final int PORT = 12087;
 
-	SensorDataCollector(MessageQueue messageQueue) {
+	public SensorDataCollector(MessageQueue messageQueue) {
 		this.messageQueue = messageQueue;
 		ServerSocketChannel serverChannel;
 		try {

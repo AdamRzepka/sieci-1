@@ -17,7 +17,7 @@ public class SelectorTest {
 		SensorDataCollector sensorDataCollector = new SensorDataCollector(queue);
 		
 		HTTPServer server = new HTTPServer();
-		server.run(sensorDataCollector);
+		server.run(sensorDataCollector, queue);
 		
 		
 		queue.run();

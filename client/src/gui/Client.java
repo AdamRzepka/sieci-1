@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -35,6 +36,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractListModel;
+
+import com.sun.net.ssl.HttpsURLConnection;
 
 public class Client extends javax.swing.JFrame {
 
@@ -264,8 +267,9 @@ public class Client extends javax.swing.JFrame {
 				}
 				
 
-				URLConnection conn;
-				conn = url.openConnection();
+				HttpURLConnection conn;
+				conn = (HttpURLConnection)url.openConnection();
+				conn.setRequestMethod("POST");
 				
 				OutputStream output = null;
 				conn.setDoOutput(true);
@@ -280,6 +284,7 @@ public class Client extends javax.swing.JFrame {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(
 						conn.getInputStream()));
 				
+				String id = reader.readLine();
 				String resource = reader.readLine();
 				String metric = reader.readLine();
 				String port = reader.readLine();
@@ -288,7 +293,7 @@ public class Client extends javax.swing.JFrame {
 				
 				
 				
-				System.out.println(resource+", "+metric+", "+port);
+				System.out.println(id +", " + resource+", "+metric+", "+port);
 				
 				
 				
@@ -412,21 +417,21 @@ public class Client extends javax.swing.JFrame {
 		
 		// Te dane trzeba uzupełnić na podstawie http (co najmniej port;P).
 		// I przenieść kod otwierający socket w odpowiednie miejsce (po otrzymaniu portu).
-		String host = "localhost";
-		int port = 12098; // port wzięty z sufitu. TODO zastąpić prawidlowym
-		
-		try {
-			channel = SocketChannel.open(new InetSocketAddress(host, port));
-			channel.configureBlocking(false);
-		} catch (IOException e) {
-			javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) SensorsInformationTabs
-					.getSelectedComponent();
-			javax.swing.JViewport viewPort = (javax.swing.JViewport) scrollPane
-					.getViewport();
-			javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
-					.getView();
-			textArea.setText(String.format("Unable to connect to %s:%d",host, port));
-		}
+//		String host = "localhost";
+//		int port = 12098; // port wzięty z sufitu. TODO zastąpić prawidlowym
+//		
+//		try {
+//			channel = SocketChannel.open(new InetSocketAddress(host, port));
+//			channel.configureBlocking(false);
+//		} catch (IOException e) {
+//			javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) SensorsInformationTabs
+//					.getSelectedComponent();
+//			javax.swing.JViewport viewPort = (javax.swing.JViewport) scrollPane
+//					.getViewport();
+//			javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
+//					.getView();
+//			textArea.setText(String.format("Unable to connect to %s:%d",host, port));
+//		}
 		
 		while (true) {
 			try {
@@ -439,24 +444,24 @@ public class Client extends javax.swing.JFrame {
 					javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
 							.getView();
 
-					ByteBuffer buff = ByteBuffer.allocate(1024);
-					int ret = channel.read(buff);
-					buff.flip();
-					if (ret > 0) {
-						String msg = Charset.defaultCharset().decode(buff).toString();
-						// format wiadomosci: #zasob#metryka#wartosc#
-						String[] tokens = msg.split("#");
-						// Do wiadomości mogą czasem dostać się jakieś śmieci (szczególnie przy pierwszej wiadomości),
-						// dlatego sprawdzamy poprawność formatu;
-						if (tokens.length >= 4 && tokens[0].isEmpty())
-							textArea.setText(tokens[3]);
-					}
-					else if (ret < 0) {
-						textArea.setText("Subscritpion not available");
-					}
-					else {
-						// Serwer jeszcze nic nie wysłał
-					}
+//					ByteBuffer buff = ByteBuffer.allocate(1024);
+//					int ret = channel.read(buff);
+//					buff.flip();
+//					if (ret > 0) {
+//						String msg = Charset.defaultCharset().decode(buff).toString();
+//						// format wiadomosci: #zasob#metryka#wartosc#
+//						String[] tokens = msg.split("#");
+//						// Do wiadomości mogą czasem dostać się jakieś śmieci (szczególnie przy pierwszej wiadomości),
+//						// dlatego sprawdzamy poprawność formatu;
+//						if (tokens.length >= 4 && tokens[0].isEmpty())
+//							textArea.setText(tokens[3]);
+//					}
+//					else if (ret < 0) {
+//						textArea.setText("Subscritpion not available");
+//					}
+//					else {
+//						// Serwer jeszcze nic nie wysłał
+//					}
 
 				}
 

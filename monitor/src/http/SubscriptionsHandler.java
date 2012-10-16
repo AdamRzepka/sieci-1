@@ -5,12 +5,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import network.MessageQueue;
+
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.handler.AbstractHandler;
 
-import sensors.Subscription;
 import sensors.Sensor;
 import sensors.SensorDataCollector;
+import subscription.Subscription;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -18,9 +20,12 @@ import java.util.regex.Pattern;
 
 public class SubscriptionsHandler extends AbstractHandler {
 	private SensorDataCollector sensorDataCollector;
+	private MessageQueue messageQueue;
+	private ArrayList<Subscription> subscriptions = new ArrayList<Subscription>();
 
-	public SubscriptionsHandler(SensorDataCollector sensorDataCollectorInput) {
+	public SubscriptionsHandler(SensorDataCollector sensorDataCollectorInput, MessageQueue messageQueue) {
 		this.sensorDataCollector = sensorDataCollectorInput;
+		this.messageQueue = messageQueue;
 	}
 
 	public void handle(String target, HttpServletRequest request,
@@ -33,6 +38,8 @@ public class SubscriptionsHandler extends AbstractHandler {
 		Pattern metricListPattern = Pattern.compile("^/.[a-z]*/metrics/(.[a-zA-Z0-9\\.]*)$");
 		Matcher metricListMatcher = metricListPattern.matcher(request.getRequestURI());
 		
+		
+		
 
 		if (request.getRequestURI().equalsIgnoreCase("/subscriptions/")
 				&& request.getMethod().equalsIgnoreCase("POST")) {
@@ -43,29 +50,27 @@ public class SubscriptionsHandler extends AbstractHandler {
 			Sensor sensor = null;
 			sensor = sensorDataCollector.findSensor(resource, metric);
 			
-			Subscription distributor = new Subscription(sensorDataCollector.getMessageQueue(), sensor, sensorDataCollector);
-			
-			
-
-			
+			Subscription subscription = new Subscription(sensorDataCollector.getMessageQueue(), sensor, sensorDataCollector);
+			subscriptions.add(subscription);
 			
 			if(sensor != null){
 				response.getWriter().println(
+						subscription.getId() + "\n" +
 						resource+"\n"+
 						metric+"\n"+
-						distributor.getPort()
+						subscription.getPort()
 						);
 			}
 			
 
-			response.setContentType("text/html");
+			response.setContentType("text/plain");
 			response.setStatus(HttpServletResponse.SC_CREATED);
 			// response.getWriter().println("Wpisać listę");
 		} else if (request.getRequestURI().equalsIgnoreCase("/subscriptions/")
 				&& request.getMethod().equalsIgnoreCase("GET")) {
 			
 			// Wypisz listę sensorów
-			response.setContentType("text/html");
+			response.setContentType("text/plain");
 			response.setStatus(HttpServletResponse.SC_OK);
 			ArrayList<String> listResources = sensorDataCollector.listResources();
 			
@@ -74,13 +79,53 @@ public class SubscriptionsHandler extends AbstractHandler {
 			}
 		} else if (m.find() && request.getMethod().equalsIgnoreCase("GET")) {
 			// TODO: poszedł odpowiedni GET o numerze m.group(1)
-			response.setContentType("text/html");
-			response.setStatus(HttpServletResponse.SC_OK);
+			
+			Subscription subscription = null;
+			int id = Integer.parseInt(m.group(1));
+			for (Subscription sub: subscriptions) {
+				if (sub.getId() == id) {
+					subscription = sub;
+				}
+			}
+			
+			if (subscription != null) {
+				response.setContentType("text/plain");
+				response.setStatus(HttpServletResponse.SC_OK);
+				response.getWriter().println(subscription.getId() + "\n" +
+						subscription.getSensor().getResource()+"\n"+
+						subscription.getSensor().getMetric()+"\n"+
+						subscription.getPort()
+						);
+			} else {
+				response.setContentType("text/html");
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				response.getWriter().printf("<h1>Nie znaleziono subskrypcji o id %d</h1>", id);
+			}
 
+		} else if (m.find() && request.getMethod().equalsIgnoreCase("DELETE")) {
+			Subscription subscription = null;
+			int id = Integer.parseInt(m.group(1));
+			for (Subscription sub: subscriptions) {
+				if (sub.getId() == id) {
+					subscription = sub;
+				}
+			}
+			
+			if (subscription != null) {
+				subscriptions.remove(subscription);
+				System.out.printf("Subskrypcja o id %d usunieta\n", id);
+				response.setContentType("text/plain");
+				response.setStatus(HttpServletResponse.SC_OK);
+			}
+			else {
+				response.setContentType("text/html");
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				response.getWriter().printf("<h1>Nie znaleziono subskrypcji o id %d</h1>", id);
+			}
 		} else if (metricListMatcher.find() && request.getMethod().equalsIgnoreCase("GET")) {
 			// TODO: poszedł odpowiedni GET o numerze metricListMatcher.group(1)
 //			System.out.println();
-			response.setContentType("text/html");
+			response.setContentType("text/plain");
 			response.setStatus(HttpServletResponse.SC_OK);
 			
 			ArrayList<String> listMetrics = sensorDataCollector.listMetrics(metricListMatcher.group(1));

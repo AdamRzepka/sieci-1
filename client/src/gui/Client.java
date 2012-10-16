@@ -34,12 +34,60 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractListModel;
 
-import com.sun.net.ssl.HttpsURLConnection;
+class Subscription {
+	public Subscription(int id, String resource, String metric, String host,
+			int httpPort, int port, SocketChannel channel) {
+		this.id = id;
+		this.resource = resource;
+		this.metric = metric;
+		this.host = host;
+		this.port = port;
+		this.channel = channel;
+		this.httpPort = httpPort;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public String getResource() {
+		return resource;
+	}
+
+	public SocketChannel getChannel() {
+		return channel;
+	}
+
+	public String getMetric() {
+		return metric;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public int getHttpPort() {
+		return httpPort;
+	}
+
+	private int id;
+	private String resource;
+	private String metric;
+	private String host;
+	private int port;
+	private int httpPort;
+	private SocketChannel channel;
+}
 
 public class Client extends javax.swing.JFrame {
 
@@ -74,17 +122,18 @@ public class Client extends javax.swing.JFrame {
 		SensorsInformationTabs = new javax.swing.JTabbedPane();
 		ConnectedSensorsListModel = new javax.swing.DefaultListModel();
 		AvaibleMetricsListModel = new javax.swing.DefaultListModel();
-		hostNameText = new javax.swing.JTextField("localhost:8080");
+		hostNameText = new javax.swing.JTextField("localhost");
+		httpPortText = new javax.swing.JTextField("8080");
 		connectHostButton = new javax.swing.JButton("Connect to monitor");
-		
+
 		connectHostButton.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				connectHostClicked();
 			}
 		});
-		
+
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
 		AvailableSensorsPanel.setBorder(javax.swing.BorderFactory
@@ -175,7 +224,8 @@ public class Client extends javax.swing.JFrame {
 		AvailableResourcesPanel.setBorder(javax.swing.BorderFactory
 				.createTitledBorder("Avaible resources"));
 
-		resourcesList = new ResourcesListModel(hostNameText.getText());
+		resourcesList = new ResourcesListModel(hostNameText.getText() + ":"
+				+ httpPortText.getText());
 		AvailableResourcesList.setModel(resourcesList);
 		AvailableResourcesScrollPane.setViewportView(AvailableResourcesList);
 
@@ -245,9 +295,9 @@ public class Client extends javax.swing.JFrame {
 				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGroup(
 						layout.createSequentialGroup()
-							.addComponent(hostNameText)
-							.addGap(10, 10, 10)
-							.addComponent(connectHostButton))
+								.addComponent(hostNameText)
+								.addComponent(httpPortText).addGap(10, 10, 10)
+								.addComponent(connectHostButton))
 				.addComponent(SensorsInformationTabs,
 						javax.swing.GroupLayout.DEFAULT_SIZE, 460,
 						Short.MAX_VALUE)
@@ -295,6 +345,7 @@ public class Client extends javax.swing.JFrame {
 										layout.createParallelGroup(
 												javax.swing.GroupLayout.Alignment.LEADING)
 												.addComponent(hostNameText)
+												.addComponent(httpPortText)
 												.addComponent(connectHostButton))
 								.addGroup(
 										layout.createParallelGroup(
@@ -353,7 +404,8 @@ public class Client extends javax.swing.JFrame {
 	protected void connectHostClicked() {
 		AvaibleMetricsListModel.clear();
 		resourcesList.clear();
-		resourcesList = new ResourcesListModel(hostNameText.getText());
+		resourcesList = new ResourcesListModel(hostNameText.getText() + ":"
+				+ httpPortText.getText());
 		AvailableResourcesList.setModel(resourcesList);
 	}
 
@@ -361,14 +413,16 @@ public class Client extends javax.swing.JFrame {
 
 		// Dodanie nowego sensora na liście connected, jeżeli któryś jest
 		// zaznaczony oraz nie ma go już na liście connected
-		
+
 		if (!AvailableSensorsList.isSelectionEmpty()
 				&& ConnectedSensorsListModel.indexOf(AvailableSensorsList
 						.getSelectedValue().toString()) < 0) {
 			String selectedResourceMetric = new String(AvailableSensorsList
 					.getSelectedValue().toString());
 			String res = "Connecting...";
-			
+
+			Subscription sub;
+
 			try {
 				Pattern p = Pattern
 						.compile("^(.[a-zA-Z0-9\\.\\-_]*)#(.[a-zA-Z0-9\\-_]*)$");
@@ -377,7 +431,8 @@ public class Client extends javax.swing.JFrame {
 
 				URL url;
 
-				String monitor = hostNameText.getText();
+				String monitor = hostNameText.getText() + ":"
+						+ httpPortText.getText();
 				url = new URL("http://" + monitor + "/subscriptions/");
 
 				String charset = "UTF-8";
@@ -410,34 +465,45 @@ public class Client extends javax.swing.JFrame {
 				String id = reader.readLine();
 				String resource = reader.readLine();
 				String metric = reader.readLine();
-				String subscriptionHost = reader.readLine();
 				String portStr = reader.readLine();
 
 				reader.close();
 
-				System.out.println(id + ", " + resource + ", " + metric + ", " + subscriptionHost + ", "
+				System.out.println(id + ", " + resource + ", " + metric + ", "
 						+ portStr);
-				
+
 				int port = Integer.parseInt(portStr);
 				try {
-					channel = SocketChannel.open(new InetSocketAddress(subscriptionHost, port));
+					channel = SocketChannel.open(new InetSocketAddress(
+							hostNameText.getText(), port));
 					channel.configureBlocking(false);
 				} catch (IOException e) {
-					res = String.format("Unable to connect to %s:%d\n", subscriptionHost, port);
+					res = String.format("Unable to connect to %s:%d\n",
+							hostNameText.getText(), port);
+					return;
 				}
+
+				sub = new Subscription(Integer.parseInt(id), resource, metric,
+						monitor, Integer.parseInt(httpPortText.getText()),
+						port, channel);
 
 				// TODO: Tutaj skończyło się pobieranie informacji od serwera
 
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return;
 			}
 
-			// TODO: wybieranie i subskrypcja kanału
-			ConnectedSensorsListModel.addElement(monitorURL + ":" + host + ":" + metric);
+			// wybieranie i subskrypcja kanału
+			assert (ConnectedSensorsListModel.size() == subscriptions.size());
+			ConnectedSensorsListModel.addElement(sub.getHost() + "/"
+					+ sub.getResource() + ":" + sub.getMetric());
+			subscriptions.add(sub);
 
 			// Dodanie nowej zakładki dla sensora
 			javax.swing.JScrollPane jScrollPane = new javax.swing.JScrollPane();
@@ -462,15 +528,39 @@ public class Client extends javax.swing.JFrame {
 									.toString()));
 			ConnectedSensorsListModel.removeElement(ConnectedSensorsList
 					.getSelectedValue().toString());
-			
+			Subscription sub = subscriptions.get(ConnectedSensorsList
+					.getSelectedIndex());
+			// try {
+			// sub.getChannel().close();
+			// } catch (IOException e) {
+			// // TODO Auto-generated catch block
+			// // ignore
+			// }
+			// try {
+			// URL url = new URL(sub.getHost() + ":" + new
+			// Integer(sub.getHttpPort()).toString());
+			// HttpURLConnection urlConnection =
+			// (HttpURLConnection)url.openConnection();
+			// urlConnection.setRequestMethod("DELETE");
+			//
+			// } catch (MalformedURLException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (IOException e) {
+			//
+			// }
+
+			subscriptions.remove(sub);
 		}
 	}
 
 	private void connectToResourceActionPerformed(java.awt.event.ActionEvent evt) {
-		if (!AvailableResourcesList.isSelectionEmpty() && resourcesList.isConnected()) {
+		if (!AvailableResourcesList.isSelectionEmpty()
+				&& resourcesList.isConnected()) {
 			try {
 				URL url;
-				String monitor = hostNameText.getText();
+				String monitor = hostNameText.getText() + ":"
+						+ httpPortText.getText();
 				url = new URL("http://" + monitor + "/subscriptions/metrics/"
 						+ AvailableResourcesList.getSelectedValue().toString());
 
@@ -533,17 +623,68 @@ public class Client extends javax.swing.JFrame {
 			java.util.logging.Logger.getLogger(Client.class.getName()).log(
 					java.util.logging.Level.SEVERE, null, ex);
 		}
+		
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
+				
 				try {
-					new Client().setVisible(true);
+					instance = new Client();
+					instance.setVisible(true);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.exit(-1);
 				}
+
+
 			}
 		});
+		
+		while (true) {
+			try {
+				Thread.currentThread().sleep(1000);// sleep for 1000 ms
+				if (SensorsInformationTabs.getTabCount() > 0) {
+					javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) SensorsInformationTabs
+							.getSelectedComponent();
+					javax.swing.JViewport viewPort = (javax.swing.JViewport) scrollPane
+							.getViewport();
+					javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
+							.getView();
+
+					SocketChannel channel = instance
+							.getSubscriptions()
+							.get(instance.getConnectedSensorsList()
+									.getSelectedIndex()).getChannel();
+
+					if (channel != null) {
+						ByteBuffer buff = ByteBuffer.allocate(1024);
+						int ret = channel.read(buff);
+						buff.flip();
+						if (ret > 0) {
+							String msg = Charset.defaultCharset()
+									.decode(buff).toString();
+							// format wiadomosci:
+							// #zasob#metryka#wartosc#
+							String[] tokens = msg.split("#");
+							// Do wiadomości mogą czasem dostać się
+							// jakieś
+							// śmieci (szczególnie przy pierwszej
+							// wiadomości),
+							// dlatego sprawdzamy poprawność formatu;
+							if (tokens.length >= 4
+									&& tokens[0].isEmpty())
+								textArea.setText(tokens[3]);
+						} else if (ret < 0) {
+							textArea.setText("Subscritpion not available");
+						} else {
+							// Serwer jeszcze nic nie wysłał
+						}
+					}
+				}
+
+			} catch (Exception ie) {
+			}
+		}
 
 		// Te dane trzeba uzupełnić na podstawie http (co najmniej port;P).
 		// I przenieść kod otwierający socket w odpowiednie miejsce (po
@@ -565,43 +706,6 @@ public class Client extends javax.swing.JFrame {
 		// textArea.setText(String.format("Unable to connect to %s:%d",host,
 		// port));
 		// }
-
-		while (true) {
-			try {
-				Thread.currentThread().sleep(1000);// sleep for 1000 ms
-				if (SensorsInformationTabs.getTabCount() > 0) {
-					javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) SensorsInformationTabs
-							.getSelectedComponent();
-					javax.swing.JViewport viewPort = (javax.swing.JViewport) scrollPane
-							.getViewport();
-					javax.swing.JTextArea textArea = (javax.swing.JTextArea) viewPort
-							.getView();
-
-					if (channel != null) {
-						ByteBuffer buff = ByteBuffer.allocate(1024);
-						int ret = channel.read(buff);
-						buff.flip();
-						if (ret > 0) {
-							String msg = Charset.defaultCharset().decode(buff)
-									.toString();
-							// format wiadomosci: #zasob#metryka#wartosc#
-							String[] tokens = msg.split("#");
-							// Do wiadomości mogą czasem dostać się jakieś
-							// śmieci (szczególnie przy pierwszej wiadomości),
-							// dlatego sprawdzamy poprawność formatu;
-							if (tokens.length >= 4 && tokens[0].isEmpty())
-								textArea.setText(tokens[3]);
-						} else if (ret < 0) {
-							textArea.setText("Subscritpion not available");
-						} else {
-							// Serwer jeszcze nic nie wysłał
-						}
-					}
-				}
-
-			} catch (Exception ie) {
-			}
-		}
 
 	}
 
@@ -625,13 +729,24 @@ public class Client extends javax.swing.JFrame {
 	private javax.swing.JButton connectToResource;
 	private javax.swing.JButton disconnectFromResource;
 	private javax.swing.JTextField hostNameText;
+	private javax.swing.JTextField httpPortText;
 	private javax.swing.JButton connectHostButton;
 	private static SocketChannel channel;
 	private ResourcesListModel resourcesList;
-	
-	private String monitorURL;
-	private int subscriptionId;
-	private int subscriptionPort;
+	private static Client instance;
+
+	ArrayList<Subscription> subscriptions = new ArrayList<Subscription>();
+
+	public ArrayList<Subscription> getSubscriptions() {
+		return subscriptions;
+	}
+
+	public javax.swing.JList getConnectedSensorsList() {
+		return ConnectedSensorsList;
+	}
+	// private String monitorURL;
+	// private int subscriptionId;
+	// private int subscriptionPort;
 }
 
 // class SensorsListModel extends AbstractListModel {
@@ -688,7 +803,7 @@ class ResourcesListModel extends AbstractListModel {
 		}
 
 	}
-	
+
 	public boolean isConnected() {
 		return connected;
 	}
@@ -700,6 +815,7 @@ class ResourcesListModel extends AbstractListModel {
 	public Object getElementAt(int n) {
 		return resourcesArray.get(n);
 	}
+
 	public void clear() {
 		resourcesArray.clear();
 	}
